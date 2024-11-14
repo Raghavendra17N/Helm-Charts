@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: {{ .Values.deployment.name }}
+  name: {{ .Values.deployment.name }}
+  {{- if .Values.deployment.namespace.create }} 
+  namespace: {{ .Values.deployment.namespace.name }}
+  {{- end }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.deployment.name }}
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: {{ .Values.deployment.name }}
+    spec:
+      containers:
+      - image: prom/{{ .Values.deployment.name }}
+        name: {{ .Values.deployment.name }}
+        args: 
+         - "--storage.tsdb.retention.time=12h"
+         - "--config.file=/etc/{{ .Values.deployment.name }}/{{ .Values.deployment.name }}.yml"
+         - "--storage.tsdb.path=/{{ .Values.deployment.name }}/"
+        ports:
+          - containerPort: 9090
+        volumeMounts:
+          - mountPath: /etc/{{ .Values.deployment.name }}/
+            name: config-map-vol
+          - mountPath: /{{ .Values.deployment.name }}/
+            name: storage-data
+        resources:
+          requests:
+            cpu: 500m 
+            memory: 500M
+          limits:
+            cpu: 1
+            memory: 1Gi
+      volumes:
+        - name: config-map-vol
+          configMap:
+            name: {{ .Values.deployment.name }}-server-conf
+            defaultMode: 420
+        - name: storage-data
+          emptyDir: {}
+status: {}
