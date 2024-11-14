@@ -6,7 +6,7 @@
 deployment:
   name: prometheus
   namespace: 
-    create: true #falase leads to use default namespace
+    create: true #false leads to use default namespace
     name: monitoring
 rolename: prometheus-role
 
